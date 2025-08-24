@@ -1,16 +1,26 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowRight, Shield, Zap, Users, TrendingUp, Star, CheckCircle, Globe, Lock, Coins, Home, DollarSign } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
+import { useMetaMask } from "@/hooks/useMetaMask";
+import MetaMaskButton from "@/components/MetaMaskButton";
+import WalletStatus from "@/components/WalletStatus";
 
 export default function Landing() {
   const navigate = useNavigate();
+  const { isConnected, account, disconnect } = useMetaMask();
   const [imageError, setImageError] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const particlesRef = useRef<any[]>([]);
   const animationFrameRef = useRef<number | null>(null);
+
+  // Debug wallet state
+  useEffect(() => {
+    console.log('🏠 Landing component state:', { isConnected, account });
+    console.log('🏠 Button should be:', !isConnected ? 'DISABLED' : 'ENABLED');
+  }, [isConnected, account]);
 
   // Particle system
   useEffect(() => {
@@ -116,18 +126,6 @@ export default function Landing() {
     };
   }, [mousePosition]);
 
-  const handleGetStarted = () => {
-    navigate("/dashboard/my-requests");
-  };
-
-  const handleBuyHouse = () => {
-    navigate("/dashboard/my-deals");
-  };
-
-  const handleOfferEstateFlow = () => {
-    navigate("/dashboard/requests/new");
-  };
-
   const features = [
     {
       icon: <Shield className="w-8 h-8" />,
@@ -216,6 +214,7 @@ export default function Landing() {
       
       {/* Header */}
       <header className="relative z-50 flex items-center justify-between p-4 md:p-6 border-b border-gray-800/50 backdrop-blur-sm">
+        <div className="flex items-center justify-between w-full">
         <div className="flex items-center gap-3 group cursor-pointer">
           <div className="w-10 h-10 bg-gradient-to-br from-green-400 to-green-600 rounded-xl flex items-center justify-center shadow-lg shadow-green-500/25 transform transition-all duration-300 group-hover:scale-110 group-hover:rotate-3">
             <div className="w-6 h-6 bg-white rounded-full relative">
@@ -225,20 +224,49 @@ export default function Landing() {
           </div>
           <span className="text-2xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent transition-all duration-300 group-hover:scale-105">EstateFlow</span>
         </div>
+          
         <div className="flex gap-3">
-          <Button 
-            onClick={handleBuyHouse}
-            variant="outline"
-            className="border-green-500/50 text-green-400 hover:bg-green-500/10 hover:text-green-300 transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 hover:shadow-lg hover:shadow-green-500/25"
-          >
-            Buy A House
-          </Button>
-          <Button 
-            onClick={handleOfferEstateFlow}
-            className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-lg shadow-green-500/25 transition-all duration-300 transform hover:scale-105 hover:-translate-y-1"
-          >
-            Offer an EstateFlow
-          </Button>
+            {isConnected ? (
+              <div className="flex items-center gap-2">
+                <WalletStatus />
+                <Button
+                  onClick={() => {
+                    // This will trigger disconnect through the useMetaMask hook
+                    console.log('🔌 Disconnecting wallet');
+                    disconnect();
+                  }}
+                  variant="outline"
+                  size="sm"
+                  className="border-red-500/50 text-red-400 hover:bg-red-500/10 hover:text-red-300"
+                >
+                  Disconnect
+                </Button>
+              </div>
+            ) : (
+              <MetaMaskButton />
+            )}
+            <Button 
+              onClick={() => {
+                console.log('🔍 Header Button clicked. Connected:', isConnected, 'Account:', account);
+                navigate("/dashboard/my-deals");
+              }}
+              variant="outline"
+              disabled={!isConnected}
+              className="border-green-500/50 text-green-400 hover:bg-green-500/10 hover:text-green-300"
+            >
+              Buy A House
+            </Button>
+            <Button 
+              onClick={() => {
+                console.log('🔍 Header Button clicked. Connected:', isConnected, 'Account:', account);
+                navigate("/dashboard/requests/new");
+              }}
+              disabled={!isConnected}
+              className="bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700"
+            >
+              Offer an EstateFlow
+            </Button>
+          </div>
         </div>
       </header>
 
@@ -262,24 +290,58 @@ export default function Landing() {
             transparent real estate transactions through our innovative P2P platform.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
-            <Button 
-              onClick={handleGetStarted}
-              size="lg"
-              className="bg-gradient-to-r from-purple-500 to-green-500 hover:from-purple-600 hover:to-green-600 text-white px-8 py-4 text-lg font-semibold shadow-2xl shadow-purple-500/25 transition-all duration-300 transform hover:scale-110 hover:-translate-y-2 hover:shadow-3xl hover:shadow-purple-500/40 group relative overflow-hidden"
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent transform translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
-              <span className="relative z-10">Get Started</span>
-              <ArrowRight className="w-5 h-5 ml-2 relative z-10 transition-transform duration-300 group-hover:translate-x-1" />
-            </Button>
-            <Button 
-              variant="outline"
-              size="lg"
-              className="border-gray-600 text-gray-300 hover:bg-gray-800 hover:text-white px-8 py-4 text-lg transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 hover:shadow-lg"
-            >
-              Learn More
-            </Button>
+          {/* Welcome Message - Clean and simple */}
+          <div className="mb-16">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button 
+                onClick={() => {
+                  console.log('🔍 Hero Button clicked. Connected:', isConnected, 'Account:', account);
+                  navigate("/dashboard/my-deals");
+                }}
+                size="lg"
+                disabled={!isConnected}
+                className={isConnected 
+                  ? 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-8 py-4 text-lg font-semibold' 
+                  : 'bg-gray-600 text-gray-400 cursor-not-allowed opacity-50 px-8 py-4 text-lg font-semibold'
+                }
+              >
+                <Home className="w-5 h-5 mr-2" />
+                Buy A House
+              </Button>
+              <Button 
+                onClick={() => {
+                  console.log('🔍 Hero Button clicked. Connected:', isConnected, 'Account:', account);
+                  navigate("/dashboard/requests/new");
+                }}
+                size="lg"
+                disabled={!isConnected}
+                variant="outline"
+                className={isConnected
+                  ? 'border-green-500/50 text-green-400 hover:bg-green-500/10 hover:text-green-300 px-8 py-4 text-lg' 
+                  : 'border-gray-600 text-gray-400 opacity-50 cursor-not-allowed px-8 py-4 text-lg'
+                }
+              >
+                <Coins className="w-5 h-5 mr-2" />
+                Offer an EstateFlow
+              </Button>
+            </div>
+            <div className="text-center mt-4">
+              {!isConnected ? (
+                <p className="text-gray-400">
+                  Connect your wallet to access these features
+                </p>
+              ) : (
+                <p className="text-green-400">
+                  ✅ Wallet connected! Buttons should be enabled.
+                </p>
+              )}
+              <p className="text-xs text-gray-500 mt-2">
+                Debug: isConnected={isConnected ? 'true' : 'false'}, account={account ? 'exists' : 'null'}
+              </p>
+            </div>
           </div>
+
+
 
           {/* Enhanced Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto mb-16">
@@ -511,20 +573,48 @@ export default function Landing() {
       <section className="relative z-10 px-4 md:px-6 py-20">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-6 transform transition-all duration-500 hover:scale-105">
-            Ready to Get Started?
+            {isConnected ? "Ready to Start Your Journey?" : "Ready to Get Started?"}
           </h2>
           <p className="text-xl text-gray-300 mb-10 transform transition-all duration-500 hover:scale-105">
-            Join EstateFlow today and revolutionize your real estate investment journey
+            {isConnected 
+              ? "Your wallet is connected! You can now access all EstateFlow features."
+              : "Join EstateFlow today and revolutionize your real estate investment journey"
+            }
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            {!isConnected ? (
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button 
+                  onClick={() => {
+                    // This will trigger the MetaMask connection
+                    console.log('🔗 Prompting wallet connection from CTA');
+                  }}
+                  size="lg"
+                  className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-8 py-4 text-lg font-semibold shadow-2xl transition-all duration-300 transform hover:scale-110 hover:-translate-y-2 hover:shadow-3xl hover:shadow-blue-500/40"
+                >
+                  <Shield className="w-5 h-5 mr-2" />
+                  Connect Wallet
+                </Button>
+                <Button 
+                  variant="outline"
+                  size="lg"
+                  className="border-gray-600 text-gray-300 hover:bg-gray-800 hover:text-white px-8 py-4 text-lg transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 hover:shadow-lg hover:shadow-white/10"
+                >
+                  Learn More
+                </Button>
+              </div>
+            ) : (
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button 
-              onClick={handleGetStarted}
+                  onClick={() => {
+                    console.log('🚀 Navigating to main dashboard from CTA');
+                    window.location.href = "/dashboard/my-requests";
+                  }}
               size="lg"
-              className="bg-gradient-to-r from-purple-500 to-green-500 hover:from-purple-600 hover:to-green-600 text-white px-8 py-4 text-lg font-semibold shadow-2xl shadow-purple-500/25 transition-all duration-300 transform hover:scale-110 hover:-translate-y-3 hover:shadow-3xl hover:shadow-purple-500/50 group relative overflow-hidden"
+                  className="bg-gradient-to-r from-purple-500 to-green-500 hover:from-purple-600 hover:to-green-600 text-white px-8 py-4 text-lg font-semibold shadow-2xl transition-all duration-300 transform hover:scale-110 hover:-translate-y-2 hover:shadow-3xl hover:shadow-purple-500/40"
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent transform translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
-              <span className="relative z-10">Start Your Journey</span>
-              <ArrowRight className="w-5 h-5 ml-2 relative z-10 transition-transform duration-300 group-hover:translate-x-2 group-hover:scale-110" />
+                  <ArrowRight className="w-5 h-5 mr-2" />
+                  Start Your Journey
             </Button>
             <Button 
               variant="outline"
@@ -533,6 +623,8 @@ export default function Landing() {
             >
               Contact Sales
             </Button>
+              </div>
+            )}
           </div>
         </div>
       </section>
