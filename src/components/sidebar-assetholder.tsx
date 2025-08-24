@@ -1,7 +1,3 @@
-import { User } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-
 type Role = "AH" | "PB";
 
 interface SidebarProps {
@@ -10,107 +6,83 @@ interface SidebarProps {
   userId: string;
 }
 
-export function Sidebar({ sidebarOpen, userRole, userId }: SidebarProps) {
+export function Sidebar({ sidebarOpen }: SidebarProps) {
   return (
     <aside
       className={`${
         sidebarOpen ? "translate-x-0" : "-translate-x-full"
-      } fixed inset-y-0 left-0 z-40 w-64 border-r border-gray-800 bg-gray-950 transition-transform lg:translate-x-0 lg:static lg:inset-0`}
+      } fixed inset-y-0 left-0 z-40 w-64 border-r border-gray-800/50 bg-gray-950/95 backdrop-blur-sm transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0`}
     >
       <div className="flex h-full flex-col">
-        <div className="p-4 border-b border-gray-800">
-          <div className="flex items-center gap-2">
-            <img
-              src="/logo.png"
-              alt="Logo"
-              className="h-8 w-8 rounded-lg object-cover"
-            />
-            <span className="text-xl font-bold text-gray-100">EstateFlow</span>
-          </div>
-          <h2 className="text-lg font-semibold text-gray-100">
+        <div className="p-4 border-b border-gray-800/50">
+          <h2 className="text-lg font-medium text-purple-400 mb-1">
             Asset Holder Dashboard
           </h2>
+          <p className="text-xs text-gray-500">
+            Manage your EstateFlow requests
+          </p>
         </div>
-        <nav className="flex-1 space-y-1 p-4">
-          <div className="space-y-2">
-            <div className="px-3 py-2">
-              <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight text-gray-100">
+        <nav className="flex-1 space-y-2 p-4">
+          <div className="space-y-3">
+            <div>
+              <h3 className="mb-3 px-3 text-sm font-semibold tracking-tight text-purple-400 uppercase">
                 My EstateFlows
-              </h2>
+              </h3>
               <a
                 href="/dashboard/my-requests"
-                className="text-sm font-medium text-gray-300 hover:bg-gray-800 hover:text-gray-100 group flex items-center rounded-lg px-3 py-2 transition-colors"
+                className="text-sm font-medium text-gray-300 hover:bg-gray-800/50 hover:text-gray-100 group flex items-center rounded-lg px-3 py-2.5 transition-all duration-200 hover:border-purple-500/20 border border-transparent"
               >
+                <span className="w-2 h-2 bg-blue-500 rounded-full mr-3"></span>
                 My EstateFlows
               </a>
             </div>
-            <div className="pl-4 space-y-2">
-              <div className="px-3 py-2">
-                <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight text-gray-100">
-                  
-                </h2>
+            
+            <div>
+              <h3 className="mb-3 px-3 text-sm font-semibold tracking-tight text-purple-400 uppercase">
+                Management
+              </h3>
+              <div className="space-y-1">
                 <a
                   href="/dashboard/manage/p1"
-                  className="text-sm font-medium text-gray-300 hover:bg-gray-800 hover:text-gray-100 group flex items-center rounded-lg px-3 py-2 transition-colors"
+                  className="text-sm font-medium text-gray-300 hover:bg-gray-800/50 hover:text-gray-100 group flex items-center rounded-lg px-3 py-2.5 transition-all duration-200 hover:border-purple-500/20 border border-transparent"
                 >
+                  <span className="w-2 h-2 bg-green-500 rounded-full mr-3"></span>
                   Manage Ongoing EstateFlow
                 </a>
-              </div>
-              <div className="px-3 py-2">
-                <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight text-gray-100">
-                </h2>
                 <a
                   href="/dashboard/requests/p1"
-                  className="text-sm font-medium text-gray-300 hover:bg-gray-800 hover:text-gray-100 group flex items-center rounded-lg px-3 py-2 transition-colors"
+                  className="text-sm font-medium text-gray-300 hover:bg-gray-800/50 hover:text-gray-100 group flex items-center rounded-lg px-3 py-2.5 transition-all duration-200 hover:border-purple-500/20 border border-transparent"
                 >
+                  <span className="w-2 h-2 bg-yellow-500 rounded-full mr-3"></span>
                   Manage Pending EstateFlow & Proposals
                 </a>
-              </div>
-              <div className="px-3 py-2">
-                <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight text-gray-100">
-                </h2>
                 <a
                   href="/dashboard/proofs/p1"
-                  className="text-sm font-medium text-gray-300 hover:bg-gray-800 hover:text-gray-100 group flex items-center rounded-lg px-3 py-2 transition-colors"
+                  className="text-sm font-medium text-gray-300 hover:bg-gray-800/50 hover:text-gray-100 group flex items-center rounded-lg px-3 py-2.5 transition-all duration-200 hover:border-purple-500/20 border border-transparent"
                 >
+                  <span className="w-2 h-2 bg-purple-500 rounded-full mr-3"></span>
                   View Proof of Loan Repayment
                 </a>
               </div>
             </div>
           </div>
-          <a
-            href="/dashboard/requests/new"
-            className="text-sm font-medium text-gray-300 hover:bg-gray-800 hover:text-gray-100 group flex items-center rounded-lg px-3 py-2 transition-colors"
-          >
-            Create EstateFlow Request
-          </a>
+          
+          <div className="pt-4 border-t border-gray-800/50">
+            <a
+              href="/dashboard/requests/new"
+              className="text-sm font-medium text-gray-300 hover:bg-gray-800/50 hover:text-gray-100 group flex items-center rounded-lg px-3 py-2.5 transition-all duration-200 hover:shadow-lg hover:border-purple-500/20 border border-transparent"
+            >
+              <span className="text-lg mr-3">+</span>
+              Create EstateFlow Request
+            </a>
+          </div>
         </nav>
 
-        <div className="border-t border-gray-800 p-4">
-          <div className="flex items-center gap-3">
-            <Avatar className="h-10 w-10">
-              <AvatarImage
-                src="/users/sally.png"
-                alt="User"
-                className="object-cover"
-              />
-              <AvatarFallback className="bg-gray-700 text-gray-100">
-                {userRole}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-100 truncate">
-                {userRole === "PB" ? "Asset Holder" : "Nominee purchaser"}
-              </p>
-              <p className="text-xs text-gray-400 truncate">ID: #{userId}</p>
-            </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-gray-400 hover:text-gray-100 hover:bg-gray-800"
-            >
-              <User className="h-4 w-4" />
-            </Button>
+        <div className="border-t border-gray-800/50 p-4">
+          <div className="text-center">
+            <p className="text-xs text-gray-500">
+              © 2025 EstateFlow
+            </p>
           </div>
         </div>
       </div>

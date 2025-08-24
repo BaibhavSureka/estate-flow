@@ -1,7 +1,3 @@
-import { User } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-
 type Role = "AH" | "PB";
 
 interface SidebarProps {
@@ -10,91 +6,69 @@ interface SidebarProps {
   userId: string;
 }
 
-export function Sidebar({ sidebarOpen, userRole, userId }: SidebarProps) {
+export function Sidebar({ sidebarOpen }: SidebarProps) {
   return (
     <aside
       className={`${
         sidebarOpen ? "translate-x-0" : "-translate-x-full"
-      } fixed inset-y-0 left-0 z-40 w-64 border-r border-gray-800 bg-gray-950 transition-transform lg:translate-x-0 lg:static lg:inset-0`}
+      } fixed inset-y-0 left-0 z-40 w-64 border-r border-gray-800/50 bg-gray-950/95 backdrop-blur-sm transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0`}
     >
       <div className="flex h-full flex-col">
-        <div className="p-4 border-b border-gray-800">
-          <div className="w-full h-32 mb-4 bg-gray-800 rounded-lg flex items-center justify-center">
-            <img
-              src="/proxy-buyer.png"
-              alt="Asset Holder Logo"
-              className="w-full h-full object-cover rounded-lg"
-            />
-          </div>
-          <h2 className="text-lg font-semibold text-gray-100">
-            Nominee purchaser Dashboard
+        <div className="p-6 border-b border-gray-800/50">
+          <h2 className="text-lg font-semibold text-green-400 mb-2 flex items-center gap-2">
+            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+            Nominee Purchaser Dashboard
           </h2>
+          <p className="text-sm text-gray-400">
+            Manage your EstateFlow proposals
+          </p>
         </div>
-        <nav className="flex-1 space-y-1 p-4">
+        
+        <nav className="flex-1 space-y-2 p-4">
           <div className="space-y-1">
+            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide px-3 py-1">
+              MY ESTATEFLOWS
+            </h3>
             <a
               href="/dashboard/my-deals"
-              className="text-sm font-medium text-gray-300 hover:bg-gray-800 hover:text-gray-100 group flex items-center rounded-lg px-3 py-2 transition-colors"
+              className="text-sm font-medium text-gray-300 hover:bg-gray-800/50 hover:text-gray-100 group flex items-center rounded-xl px-4 py-3 transition-all duration-200 border border-transparent hover:border-gray-700/50"
             >
+              <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
               My EstateFlow Proposals
             </a>
             <a
               href="/dashboard/manage-proxy/1"
-              className="text-sm font-medium text-gray-300 hover:bg-gray-800 hover:text-gray-100 group flex items-center rounded-lg px-3 py-2 transition-colors ml-4"
+              className="text-sm font-medium text-gray-300 hover:bg-gray-800/50 hover:text-gray-100 group flex items-center rounded-xl px-4 py-3 transition-all duration-200 ml-4 border border-transparent hover:border-gray-700/50"
             >
               Proposal Details
             </a>
           </div>
 
-          <div className="space-y-1">
+          <div className="space-y-1 pt-4">
+            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide px-3 py-1">
+              OPPORTUNITIES
+            </h3>
             <a
               href="/dashboard/swap-opportunities"
-              className="text-sm font-medium text-gray-300 hover:bg-gray-800 hover:text-gray-100 group flex items-center rounded-lg px-3 py-2 transition-colors"
+              className="text-sm font-medium text-gray-300 hover:bg-gray-800/50 hover:text-gray-100 group flex items-center rounded-xl px-4 py-3 transition-all duration-200 border border-transparent hover:border-gray-700/50"
             >
+              <div className="w-2 h-2 bg-yellow-500 rounded-full mr-3"></div>
               View Credit Swap Opportunities
             </a>
             <a
               href="/dashboard/deal-info-proxy/p1"
-              className="text-sm font-medium text-gray-300 hover:bg-gray-800 hover:text-gray-100 group flex items-center rounded-lg px-3 py-2 transition-colors ml-4"
+              className="text-sm font-medium text-gray-300 hover:bg-gray-800/50 hover:text-gray-100 group flex items-center rounded-xl px-4 py-3 transition-all duration-200 ml-4 border border-transparent hover:border-gray-700/50"
             >
               View Property Details
             </a>
             <a
               href="/dashboard/new-proposal"
-              className="text-sm font-medium text-gray-300 hover:bg-gray-800 hover:text-gray-100 group flex items-center rounded-lg px-3 py-2 transition-colors ml-4"
+              className="text-sm font-medium text-gray-300 hover:bg-gray-800/50 hover:text-gray-100 group flex items-center rounded-xl px-4 py-3 transition-all duration-200 ml-4 border border-transparent hover:border-gray-700/50"
             >
               Submit Proposal
             </a>
           </div>
         </nav>
-
-        <div className="border-t border-gray-800 p-4">
-          <div className="flex items-center gap-3">
-            <Avatar className="h-10 w-10">
-              <AvatarImage
-                src="/users/john.png"
-                alt="User"
-                className="object-cover"
-              />
-              <AvatarFallback className="bg-gray-700 text-gray-100">
-                {userRole}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-100 truncate">
-                {userRole === "AH" ? "Asset Holder" : "Nominee purchaser"}
-              </p>
-              <p className="text-xs text-gray-400 truncate">ID: #{userId}</p>
-            </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-gray-400 hover:text-gray-100 hover:bg-gray-800"
-            >
-              <User className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
       </div>
     </aside>
   );

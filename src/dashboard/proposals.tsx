@@ -77,30 +77,41 @@ export default function ProposalTracker() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100 w-screen">
+    <div className="min-h-screen bg-gray-950 text-gray-100 w-screen flex flex-col">
       <Header
         userRole={userRole}
         onMenuClick={() => setSidebarOpen(!sidebarOpen)}
       />
-      <div className="flex">
+      
+      <div className="flex flex-1 relative">
+        {/* Overlay for mobile */}
+        {sidebarOpen && (
+          <div
+            className="fixed inset-0 bg-black/50 z-30 lg:hidden"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+        
         <Sidebar
           sidebarOpen={sidebarOpen}
           userRole={userRole}
           userId={userId}
         />
-        <main className="flex-1 overflow-auto">
-          <div className="p-6 space-y-6">
+        
+        <main className="flex-1 overflow-auto lg:ml-0">
+          <div className="p-4 md:p-6 space-y-6">
             <div className="space-y-2">
-              <h1 className="text-3xl font-bold text-gray-100">Proposals</h1>
-              <p className="text-gray-400">
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-100">Proposals</h1>
+              <p className="text-gray-400 text-sm md:text-base">
                 Track and manage your property proposals.
               </p>
             </div>
 
             {/* Timeline Card */}
-            <Card className="bg-gray-900 border-gray-800">
+            <Card className="bg-gray-900/80 border-gray-800/50 hover:bg-gray-900 transition-all duration-200">
               <CardHeader>
-                <CardTitle className="text-gray-100">
+                <CardTitle className="text-gray-100 flex items-center gap-2">
+                  <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
                   Proposal Timeline
                 </CardTitle>
                 <CardDescription className="text-gray-400">
@@ -108,7 +119,7 @@ export default function ProposalTracker() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-8">
+                <div className="space-y-6">
                   {mockTimeline.map((step, index) => (
                     <div key={step.id} className="relative">
                       {/* Timeline line */}
@@ -119,28 +130,28 @@ export default function ProposalTracker() {
                               ? "bg-green-500"
                               : step.status === "Pending"
                               ? "bg-yellow-500"
-                              : "bg-gray-500"
+                              : "bg-gray-600"
                           }`}
                         />
                       )}
 
-                      <div className="flex items-start gap-4">
+                      <div className="flex items-start gap-4 p-3 rounded-lg bg-gray-800/30 hover:bg-gray-800/50 transition-colors">
                         <div className="flex-shrink-0">
                           {getStatusIcon(step.status)}
                         </div>
                         <div className="flex-1">
-                          <div className="flex items-center justify-between">
+                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                             <h3 className="text-lg font-medium text-gray-100">
                               {step.label}
                             </h3>
                             <Badge
-                              className={
+                              className={`${
                                 step.status === "Approved"
-                                  ? "bg-green-500"
+                                  ? "bg-green-500 hover:bg-green-600"
                                   : step.status === "Pending"
-                                  ? "bg-yellow-500"
-                                  : "bg-gray-500"
-                              }
+                                  ? "bg-yellow-500 hover:bg-yellow-600"
+                                  : "bg-gray-500 hover:bg-gray-600"
+                              } transition-colors`}
                             >
                               {step.status}
                             </Badge>
@@ -157,41 +168,50 @@ export default function ProposalTracker() {
             </Card>
 
             {/* Proposals Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
               {mockProposals.map((proposal) => (
-                <Card key={proposal.id} className="bg-gray-900 border-gray-800">
+                <Card key={proposal.id} className="bg-gray-900/80 border-gray-800/50 hover:bg-gray-900 transition-all duration-200 group">
                   <CardContent className="p-6 space-y-4">
-                    <h3 className="text-lg font-semibold text-gray-100">
-                      {proposal.property}
-                    </h3>
-                    <div className="space-y-2">
-                      <p className="text-gray-300">
-                        Offered Rate: {proposal.rate}%
-                      </p>
-                      <p className="text-gray-300">
-                        Repayment: {proposal.months} months
-                      </p>
-                      <p className="text-gray-300">
-                        Status:{" "}
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                      <h3 className="text-lg font-semibold text-gray-100">
+                        {proposal.property}
+                      </h3>
+                    </div>
+                    
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-400">Offered Rate:</span>
+                        <span className="text-purple-400 font-medium">{proposal.rate}%</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-400">Repayment:</span>
+                        <span className="text-gray-300 font-medium">{proposal.months} months</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-400">Status:</span>
                         <Badge
-                          className={
+                          className={`${
                             proposal.status === "Accepted"
-                              ? "bg-green-500"
-                              : "bg-yellow-500"
-                          }
+                              ? "bg-green-500 hover:bg-green-600"
+                              : "bg-yellow-500 hover:bg-yellow-600"
+                          } transition-colors`}
                         >
                           {proposal.status}
                         </Badge>
-                      </p>
-                      <p className="text-gray-300">
-                        Proofs submitted: {proposal.proofSubmitted} /{" "}
-                        {proposal.totalProofs}
-                      </p>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-400">Proofs submitted:</span>
+                        <span className="text-blue-400 font-medium">
+                          {proposal.proofSubmitted} / {proposal.totalProofs}
+                        </span>
+                      </div>
                     </div>
+                    
                     {proposal.status === "Accepted" && (
                       <Button
                         variant="outline"
-                        className="bg-gray-800 text-gray-100 hover:bg-gray-700"
+                        className="w-full bg-purple-600/10 border-purple-500/50 text-purple-400 hover:bg-purple-600/20 hover:border-purple-500 transition-all duration-200"
                       >
                         Upload Next Proof
                       </Button>
