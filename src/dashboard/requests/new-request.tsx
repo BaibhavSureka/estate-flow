@@ -14,13 +14,24 @@ import { Label } from "@/components/ui/label";
 import { Sidebar } from "@/components/sidebar-assetholder";
 import { Header } from "@/components/header";
 import { useRequests } from "@/contexts/RequestsContext";
+import { useEstateFlowContract } from "@/hooks/useEstateFlowContract";
+import { useMetaMask } from "@/hooks/useMetaMask";
+import { Loader2, AlertCircle, CheckCircle, ExternalLink, Wallet } from "lucide-react";
 
 export default function RequestNew() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+
   const navigate = useNavigate();
   const { addRequest } = useRequests();
+  const { isConnected, connect } = useMetaMask();
+  const { 
+    isSubmitting, 
+    error, 
+    txHash: contractTxHash,
+    submitEstateFlowRequest,
+    clearError 
+  } = useEstateFlowContract();
   const [form, setForm] = useState({
     propertyName: "",
     description: "",
@@ -46,37 +57,71 @@ export default function RequestNew() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Clear any previous errors
+    clearError();
+    setShowSuccess(false);
+
+    // Validate required fields
     if (!form.propertyName || !form.description || !form.loanAmount || !form.months || !form.collateralType) {
       alert("Please fill in all required fields");
       return;
     }
-    
-    setIsSubmitting(true);
-    
+
+    // Check wallet connection
+    if (!isConnected) {
+      try {
+        await connect();
+        return; // Let user try again after connecting
+      } catch (err) {
+        alert("Please connect your MetaMask wallet to submit a request");
+        return;
+      }
+    }
+
     try {
-      // Create new request
-      addRequest({
-        property: form.propertyName,
-        rate: 6.0, // Default rate, could be calculated based on form data
-        months: parseInt(form.months), // Use the months from form
-        totalProofs: 6, // Default proof requirements
-        loanAmount: parseFloat(form.loanAmount),
-        image: `/properties/${Math.floor(Math.random() * 6) + 1}.png`, // Random property image
+      console.log('🚀 Starting MetaMask transaction...');
+      
+      // Prepare form data for the contract
+      const formData = {
+        propertyName: form.propertyName,
+        loanAmount: form.loanAmount,
         description: form.description,
         collateralType: form.collateralType,
-        yieldPreference: form.yieldPreference ? parseFloat(form.yieldPreference) : undefined,
-      });
-      
-      // Show success message briefly before navigation
-      setShowSuccess(true);
-      setTimeout(() => {
-        navigate("/dashboard/my-requests");
-      }, 1000);
-    } catch (error) {
-      console.error("Error creating request:", error);
-      alert("Error creating request. Please try again.");
-    } finally {
-      setIsSubmitting(false);
+        loanTerm: form.months,
+        yieldPreference: form.yieldPreference || "0",
+        propertyImage: form.propertyPhoto || undefined
+      };
+
+      // Submit via the hook (this handles MetaMask, network checking, etc.)
+      const newRequest = await submitEstateFlowRequest(formData);
+
+      if (newRequest) {
+        console.log('✅ Request created successfully:', newRequest);
+
+        // Add to local state for immediate UI update
+        addRequest({
+          property: form.propertyName,
+          rate: form.yieldPreference ? parseFloat(form.yieldPreference) : 6.0,
+          months: parseInt(form.months),
+          totalProofs: 6,
+          loanAmount: parseFloat(form.loanAmount),
+          image: newRequest.imageUrl || `/properties/${Math.floor(Math.random() * 6) + 1}.png`,
+          description: form.description,
+          collateralType: form.collateralType,
+          yieldPreference: form.yieldPreference ? parseFloat(form.yieldPreference) : undefined,
+        });
+
+        // Show success message
+        setShowSuccess(true);
+        
+        // Navigate to requests page after a delay
+        setTimeout(() => {
+          navigate("/dashboard/my-requests");
+        }, 2000);
+      }
+    } catch (error: any) {
+      console.error("❌ Transaction failed:", error);
+      // Error handling is done by the hook
     }
   };
 
@@ -98,13 +143,72 @@ export default function RequestNew() {
         {/* Main content */}
         <main className="flex-1 overflow-auto lg:ml-0">
           <div className="max-w-4xl mx-auto p-4 md:p-8 space-y-8">
+            {/* Wallet Connection Status */}
+            {!isConnected && (
+              <div className="bg-gradient-to-r from-yellow-600 to-orange-500 text-white px-6 py-4 rounded-xl shadow-lg border border-yellow-500/20">
+                <div className="flex items-center gap-3">
+                  <Wallet className="w-6 h-6" />
+                  <div className="flex-1">
+                    <span className="font-medium">Connect your wallet to submit requests</span>
+                    <p className="text-sm text-yellow-100 mt-1">MetaMask connection required for blockchain transactions</p>
+                  </div>
+                  <Button 
+                    onClick={connect}
+                    size="sm"
+                    variant="outline"
+                    className="border-white/30 text-white hover:bg-white/10"
+                  >
+                    Connect Wallet
+                  </Button>
+                </div>
+              </div>
+            )}
+
+
+
+            {/* Transaction Error */}
+            {error && (
+              <div className="bg-gradient-to-r from-red-600 to-red-500 text-white px-6 py-4 rounded-xl shadow-lg border border-red-500/20">
+                <div className="flex items-center gap-3">
+                  <AlertCircle className="w-6 h-6" />
+                  <div className="flex-1">
+                    <span className="font-medium">Transaction Error</span>
+                    <p className="text-sm text-red-100 mt-1">{error}</p>
+                  </div>
+                  <Button 
+                    onClick={clearError}
+                    size="sm"
+                    variant="outline"
+                    className="border-white/30 text-white hover:bg-white/10"
+                  >
+                    ×
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Success State */}
             {showSuccess && (
               <div className="bg-gradient-to-r from-green-600 to-green-500 text-white px-6 py-4 rounded-xl shadow-lg border border-green-500/20 animate-in slide-in-from-top duration-300">
                 <div className="flex items-center gap-3">
-                  <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center">
-                    <span className="text-sm font-bold">✓</span>
+                  <CheckCircle className="w-6 h-6" />
+                  <div className="flex-1">
+                    <span className="font-medium">Request created successfully!</span>
+                    <p className="text-sm text-green-100 mt-1">
+                      {contractTxHash ? 'Transaction confirmed on blockchain' : 'Redirecting to requests page...'}
+                    </p>
+                    {contractTxHash && (
+                      <a
+                        href={`https://sepolia.etherscan.io/tx/${contractTxHash}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-green-100 hover:text-white inline-flex items-center gap-1 mt-1 text-sm"
+                      >
+                        View on Etherscan
+                        <ExternalLink className="w-3 h-3" />
+                      </a>
+                    )}
                   </div>
-                  <span className="font-medium">Request created successfully! Redirecting to requests page...</span>
                 </div>
               </div>
             )}
@@ -250,21 +354,50 @@ export default function RequestNew() {
                     </p>
                   </div>
 
-                  <div className="pt-4">
+                  <div className="pt-4 space-y-3">
                     <Button
                       type="submit"
-                      disabled={isSubmitting}
+                      disabled={isSubmitting || !isConnected}
                       className="w-full h-14 bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-700 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 text-lg font-semibold rounded-xl shadow-lg hover:shadow-purple-500/25"
                     >
                       {isSubmitting ? (
                         <div className="flex items-center gap-3">
-                          <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                          Creating Request...
+                          <Loader2 className="w-5 h-5 animate-spin" />
+                          {contractTxHash ? 'Confirming Transaction...' : 'Preparing Transaction...'}
+                        </div>
+                      ) : !isConnected ? (
+                        <div className="flex items-center gap-3">
+                          <Wallet className="w-5 h-5" />
+                          Connect Wallet First
                         </div>
                       ) : (
                         "Submit Request"
                       )}
                     </Button>
+                    
+                    {/* Transaction Status */}
+                    {isSubmitting && contractTxHash && (
+                      <div className="flex items-center justify-center gap-2 text-blue-400 text-sm">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>Transaction pending...</span>
+                        <a
+                          href={`https://sepolia.etherscan.io/tx/${contractTxHash}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-400 hover:text-blue-300 inline-flex items-center gap-1"
+                        >
+                          View on Etherscan
+                          <ExternalLink className="w-3 h-3" />
+                        </a>
+                      </div>
+                    )}
+                    
+                    {/* Helper Text */}
+                    {isConnected && !isSubmitting && !error && (
+                      <p className="text-xs text-gray-500 text-center">
+                        This will create a transaction on Sepolia testnet
+                      </p>
+                    )}
                   </div>
                 </form>
               </CardContent>

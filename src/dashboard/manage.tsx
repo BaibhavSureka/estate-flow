@@ -21,6 +21,7 @@ import {
 } from "chart.js";
 import { Header } from "@/components/header";
 import { Sidebar } from "@/components/sidebar-assetholder";
+import { useRequests } from "@/contexts/RequestsContext";
 
 ChartJS.register(
   CategoryScale,
@@ -41,22 +42,22 @@ export default function ManagementConsole() {
   const [yieldAvailable, setYieldAvailable] = useState(3200);
   const [released, setReleased] = useState(3000);
   const [loanRemaining, setLoanRemaining] = useState(150000 - released);
-  const [propertyName, setPropertyName] = useState("");
+  const [propertyData, setPropertyData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  // Mock data - in a real app, this would come from an API call
-  const mockLoans = {
-    p1: "Jaipur Palace",
-    p2: "Pune Residency",
-  };
+  const { requests } = useRequests();
 
-  // Set property name when component mounts
+  // Fetch property data when component mounts
   useEffect(() => {
-    if (id) {
-      setPropertyName(
-        mockLoans[id as keyof typeof mockLoans] || "Unknown Property"
-      );
+    if (id && requests.length > 0) {
+      const property = requests.find(req => req.id === id);
+      if (property) {
+        setPropertyData(property);
+        setLoanRemaining(property.loanAmount - released);
+      }
+      setLoading(false);
     }
-  }, [id]);
+  }, [id, requests, released]);
 
   const handleReleaseYield = () => {
     const amount = Math.min(yieldAvailable, loanRemaining);
@@ -150,7 +151,7 @@ export default function ManagementConsole() {
           <div className="p-4 md:p-6 space-y-6">
             <div className="space-y-2">
               <h1 className="text-2xl md:text-3xl font-bold text-gray-100">
-                My Credit Swap for {propertyName}
+                My Credit Swap for {propertyData?.property || 'Loading...'}
               </h1>
               <p className="text-gray-400 text-sm md:text-base">
                 Manage your loan engagement and track progress.
@@ -158,18 +159,35 @@ export default function ManagementConsole() {
             </div>
 
             {/* Property Image */}
-            <div className="w-full h-64 md:h-80 relative rounded-lg overflow-hidden">
-              <img
-                src="/properties/4.png"
-                alt={`${propertyName} property image`}
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
-              <div className="absolute bottom-4 left-4">
-                <h2 className="text-2xl font-bold text-white">{propertyName}</h2>
-                <p className="text-white/80">Investment Property</p>
+            {loading ? (
+              <div className="w-full h-64 md:h-80 relative rounded-lg overflow-hidden bg-gray-800 animate-pulse">
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="text-gray-400">Loading property details...</div>
+                </div>
               </div>
-            </div>
+            ) : propertyData ? (
+              <div className="w-full h-64 md:h-80 relative rounded-lg overflow-hidden">
+                <img
+                  src={propertyData.image}
+                  alt={`${propertyData.property} property image`}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.currentTarget.src = "https://placehold.co/600x400/1f2937/ffffff?text=Property+Image";
+                  }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+                <div className="absolute bottom-4 left-4">
+                  <h2 className="text-2xl font-bold text-white">{propertyData.property}</h2>
+                  <p className="text-white/80">Investment Property</p>
+                </div>
+              </div>
+            ) : (
+              <div className="w-full h-64 md:h-80 relative rounded-lg overflow-hidden bg-gray-800">
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="text-gray-400">Property not found</div>
+                </div>
+              </div>
+            )}
 
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row gap-4">
@@ -190,6 +208,50 @@ export default function ManagementConsole() {
                 <a href={`/dashboard/proofs/${id}`}>🏠 View Proof of Property</a>
               </Button>
             </div>
+
+            {/* Property Details Cards */}
+            {propertyData && (
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mb-6">
+                <Card className="bg-gray-900/80 border-gray-800/50 hover:bg-gray-900 transition-all duration-200">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-gray-100 flex items-center gap-2">
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      Interest Rate
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-green-400">{propertyData.rate}%</div>
+                    <p className="text-sm text-gray-400">Annual interest rate</p>
+                  </CardContent>
+                </Card>
+                
+                <Card className="bg-gray-900/80 border-gray-800/50 hover:bg-gray-900 transition-all duration-200">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-gray-100 flex items-center gap-2">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                      Loan Amount
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-blue-400">${propertyData.loanAmount.toLocaleString()}</div>
+                    <p className="text-sm text-gray-400">Total loan amount</p>
+                  </CardContent>
+                </Card>
+                
+                <Card className="bg-gray-900/80 border-gray-800/50 hover:bg-gray-900 transition-all duration-200">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-gray-100 flex items-center gap-2">
+                      <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                      Repayment Term
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-purple-400">{propertyData.months} months</div>
+                    <p className="text-sm text-gray-400">Loan duration</p>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
 
             {/* Stat Cards */}
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -250,19 +312,57 @@ export default function ManagementConsole() {
                   <div className="text-3xl font-bold text-red-400 mb-4">
                     ${loanRemaining.toLocaleString()}
                   </div>
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm text-gray-400">
-                      <span>Progress</span>
-                      <span>{Math.round((released / 150000) * 100)}%</span>
+                                      <div className="space-y-2">
+                      <div className="flex justify-between text-sm text-gray-400">
+                        <span>Progress</span>
+                        <span>{Math.round((released / (propertyData?.loanAmount || 150000)) * 100)}%</span>
+                      </div>
+                      <Progress
+                        value={(released / (propertyData?.loanAmount || 150000)) * 100}
+                        className="h-2"
+                      />
                     </div>
-                    <Progress
-                      value={(released / 150000) * 100}
-                      className="h-2"
-                    />
-                  </div>
                 </CardContent>
               </Card>
             </div>
+
+            {/* Property Description */}
+            {propertyData && (
+              <Card className="bg-gray-900/80 border-gray-800/50 hover:bg-gray-900 transition-all duration-200 mb-6">
+                <CardHeader>
+                  <CardTitle className="text-gray-100 flex items-center gap-2">
+                    <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                    Property Details
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div>
+                      <h4 className="text-lg font-semibold text-gray-100 mb-2">{propertyData.property}</h4>
+                      <p className="text-gray-400">{propertyData.description}</p>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <span className="text-gray-400">Collateral Type:</span>
+                        <span className="text-gray-200 ml-2 capitalize">{propertyData.collateralType}</span>
+                      </div>
+                      <div>
+                        <span className="text-gray-400">Yield Preference:</span>
+                        <span className="text-gray-200 ml-2">{propertyData.yieldPreference}%</span>
+                      </div>
+                      <div>
+                        <span className="text-gray-400">Proofs Submitted:</span>
+                        <span className="text-gray-200 ml-2">{propertyData.proofSubmitted}/{propertyData.totalProofs}</span>
+                      </div>
+                      <div>
+                        <span className="text-gray-400">Created:</span>
+                        <span className="text-gray-200 ml-2">{propertyData.createdAt.toLocaleDateString()}</span>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Chart */}
             <Card className="bg-gray-900/80 border-gray-800/50 hover:bg-gray-900 transition-all duration-200">

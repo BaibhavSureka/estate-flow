@@ -28,6 +28,21 @@ const RequestsContext = createContext<RequestsContextType | undefined>(undefined
 // Initial mock data
 const initialRequests: EstateFlowRequest[] = [
   {
+    id: "sitamarhi",
+    property: "sitamarhi",
+    rate: 4.0,
+    months: 12,
+    status: "Open",
+    proofSubmitted: 0,
+    totalProofs: 6,
+    loanAmount: 150000,
+    image: "/properties/sitamarhi.png",
+    description: "Beautiful property in Sitamarhi with traditional architecture",
+    collateralType: "yield",
+    yieldPreference: 4.5,
+    createdAt: new Date("2024-01-05"),
+  },
+  {
     id: "p1",
     property: "Jaipur Palace",
     rate: 5.9,
