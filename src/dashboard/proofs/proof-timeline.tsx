@@ -59,10 +59,6 @@ export default function ProofTimeline() {
     }
   };
 
-  const remainingPayments = mockProofs.filter(
-    (proof) => proof.status === "Not Submitted"
-  ).length;
-
   return (
     <div className="min-h-screen bg-gray-950 text-gray-100 w-screen flex flex-col">
       <Header

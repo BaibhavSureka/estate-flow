@@ -10,7 +10,6 @@ import WalletStatus from "@/components/WalletStatus";
 export default function Landing() {
   const navigate = useNavigate();
   const { isConnected, account, disconnect } = useMetaMask();
-  const [imageError, setImageError] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const particlesRef = useRef<any[]>([]);
@@ -126,6 +125,16 @@ export default function Landing() {
     };
   }, [mousePosition]);
 
+  // Mouse tracking
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePosition({ x: e.clientX, y: e.clientY });
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
+
   const features = [
     {
       icon: <Shield className="w-8 h-8" />,
@@ -213,35 +222,33 @@ export default function Landing() {
       <div className="fixed bottom-1/3 right-0 w-28 h-px bg-gradient-to-l from-transparent via-pink-400/15 to-transparent z-0"></div>
       
       {/* Header */}
-      <header className="relative z-50 flex items-center justify-between p-4 md:p-6 border-b border-gray-800/50 backdrop-blur-sm">
-        <div className="flex items-center justify-between w-full">
-        <div className="flex items-center gap-3 group cursor-pointer">
+      <header className="relative z-50 flex items-center justify-between p-4 md:p-6 border-b border-gray-800/50 backdrop-blur-sm w-full max-w-full">
+        <div className="flex items-center gap-3 group cursor-pointer flex-shrink-0">
           <div className="w-10 h-10 bg-gradient-to-br from-green-400 to-green-600 rounded-xl flex items-center justify-center shadow-lg shadow-green-500/25 transform transition-all duration-300 group-hover:scale-110 group-hover:rotate-3">
             <div className="w-6 h-6 bg-white rounded-full relative">
               <div className="absolute inset-0 border-2 border-green-500 rounded-full"></div>
               <div className="absolute inset-1 border-2 border-green-500 rounded-full"></div>
             </div>
           </div>
-          <span className="text-2xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent transition-all duration-300 group-hover:scale-105">EstateFlow</span>
+          <span className="text-lg md:text-2xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent transition-all duration-300 group-hover:scale-105">EstateFlow</span>
         </div>
           
-        <div className="flex gap-3">
+        <div className="flex items-center gap-2 md:gap-3 flex-shrink-0">
             {isConnected ? (
-              <div className="flex items-center gap-2">
+              <>
                 <WalletStatus />
                 <Button
                   onClick={() => {
-                    // This will trigger disconnect through the useMetaMask hook
                     console.log('🔌 Disconnecting wallet');
                     disconnect();
                   }}
                   variant="outline"
                   size="sm"
-                  className="border-red-500/50 text-red-400 hover:bg-red-500/10 hover:text-red-300"
+                  className="border-red-500/50 text-red-400 hover:bg-red-500/10 hover:text-red-300 text-xs md:text-sm px-2 md:px-3"
                 >
                   Disconnect
                 </Button>
-              </div>
+              </>
             ) : (
               <MetaMaskButton />
             )}
@@ -252,7 +259,8 @@ export default function Landing() {
               }}
               variant="outline"
               disabled={!isConnected}
-              className="border-green-500/50 text-green-400 hover:bg-green-500/10 hover:text-green-300"
+              size="sm"
+              className="border-green-500/50 text-green-400 hover:bg-green-500/10 hover:text-green-300 text-xs md:text-sm px-2 md:px-3"
             >
               Buy A House
             </Button>
@@ -262,37 +270,37 @@ export default function Landing() {
                 navigate("/dashboard/requests/new");
               }}
               disabled={!isConnected}
-              className="bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700"
+              size="sm"
+              className="bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700 text-xs md:text-sm px-2 md:px-3"
             >
               Offer an EstateFlow
             </Button>
           </div>
-        </div>
       </header>
 
       {/* Hero Section */}
-      <section className="relative z-10 px-4 md:px-6 py-20 md:py-32 text-center">
-        <div className="max-w-6xl mx-auto">
+      <section className="relative z-10 px-4 md:px-6 py-20 md:py-32 text-center w-full max-w-full overflow-hidden">
+        <div className="max-w-6xl mx-auto w-full">
           <div className="inline-flex items-center gap-2 bg-purple-500/20 border border-purple-500/30 text-purple-300 px-6 py-3 rounded-full mb-8 backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:bg-purple-500/30 hover:shadow-lg hover:shadow-purple-500/25 group cursor-default">
             <Star className="w-4 h-4 transition-transform duration-300 group-hover:rotate-12" />
             <span className="text-sm font-medium">Introducing EstateFlow</span>
           </div>
 
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-8 leading-tight transform transition-all duration-700 hover:scale-105">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-8 leading-tight transform transition-all duration-700 hover:scale-105 break-words">
             <span className="bg-gradient-to-r from-white via-gray-100 to-gray-300 bg-clip-text text-transparent inline-block transform transition-all duration-500 hover:scale-110 hover:rotate-1">Use crypto to buy homes</span>
             <br />
             <span className="bg-gradient-to-r from-purple-400 to-purple-600 bg-clip-text text-transparent inline-block transform transition-all duration-500 hover:scale-110 hover:-rotate-1">with p2p</span>{" "}
             <span className="bg-gradient-to-r from-green-400 to-green-600 bg-clip-text text-transparent inline-block transform transition-all duration-500 hover:scale-110 hover:rotate-1">estate flows</span>
           </h1>
 
-          <p className="text-xl md:text-2xl text-gray-300 mb-12 leading-relaxed max-w-4xl mx-auto transform transition-all duration-500 hover:scale-105">
+          <p className="text-lg md:text-xl xl:text-2xl text-gray-300 mb-12 leading-relaxed max-w-4xl mx-auto transform transition-all duration-500 hover:scale-105 px-2">
             EstateFlow connects crypto holders with nominee purchasers to facilitate secure, 
             transparent real estate transactions through our innovative P2P platform.
           </p>
 
           {/* Welcome Message - Clean and simple */}
-          <div className="mb-16">
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="mb-16 w-full max-w-full overflow-hidden">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center px-2">
               <Button 
                 onClick={() => {
                   console.log('🔍 Hero Button clicked. Connected:', isConnected, 'Account:', account);
@@ -385,8 +393,8 @@ export default function Landing() {
       </section>
 
       {/* Features Section */}
-      <section className="relative z-10 px-4 md:px-6 py-20 bg-gray-900/30 backdrop-blur-sm">
-        <div className="max-w-6xl mx-auto">
+      <section className="relative z-10 px-4 md:px-6 py-20 bg-gray-900/30 backdrop-blur-sm w-full max-w-full overflow-hidden">
+        <div className="max-w-6xl mx-auto w-full">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-6 transform transition-all duration-500 hover:scale-105">
               Why Choose EstateFlow?
@@ -448,8 +456,8 @@ export default function Landing() {
       </section>
 
       {/* How It Works */}
-      <section className="relative z-10 px-4 md:px-6 py-20">
-        <div className="max-w-6xl mx-auto">
+      <section className="relative z-10 px-4 md:px-6 py-20 w-full max-w-full overflow-hidden">
+        <div className="max-w-6xl mx-auto w-full">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-6 transform transition-all duration-500 hover:scale-105">
               How EstateFlow Works
@@ -522,8 +530,8 @@ export default function Landing() {
       </section>
 
       {/* Testimonials */}
-      <section className="relative z-10 px-4 md:px-6 py-20 bg-gray-900/30 backdrop-blur-sm">
-        <div className="max-w-6xl mx-auto">
+      <section className="relative z-10 px-4 md:px-6 py-20 bg-gray-900/30 backdrop-blur-sm w-full max-w-full overflow-hidden">
+        <div className="max-w-6xl mx-auto w-full">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-6 transform transition-all duration-500 hover:scale-105">
               What Our Users Say
@@ -570,8 +578,8 @@ export default function Landing() {
       </section>
 
       {/* CTA Section */}
-      <section className="relative z-10 px-4 md:px-6 py-20">
-        <div className="max-w-4xl mx-auto text-center">
+      <section className="relative z-10 px-4 md:px-6 py-20 w-full max-w-full overflow-hidden">
+        <div className="max-w-4xl mx-auto text-center w-full">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-6 transform transition-all duration-500 hover:scale-105">
             {isConnected ? "Ready to Start Your Journey?" : "Ready to Get Started?"}
           </h2>
@@ -630,8 +638,8 @@ export default function Landing() {
       </section>
 
       {/* Footer */}
-      <footer className="relative z-10 bg-gray-900 border-t border-gray-800">
-        <div className="max-w-6xl mx-auto px-4 md:px-6 py-12">
+      <footer className="relative z-10 bg-gray-900 border-t border-gray-800 w-full max-w-full overflow-hidden">
+        <div className="max-w-6xl mx-auto px-4 md:px-6 py-12 w-full">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             {/* Brand */}
             <div className="col-span-1 md:col-span-2">

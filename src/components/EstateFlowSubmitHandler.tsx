@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { Button } from "@/components/ui/button";
 import { Loader2, AlertCircle, CheckCircle, ExternalLink } from "lucide-react";
 import { useEstateFlowContract } from "@/hooks/useEstateFlowContract";
