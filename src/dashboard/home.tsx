@@ -125,16 +125,6 @@ export default function Landing() {
     };
   }, [mousePosition]);
 
-  // Mouse tracking
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      setMousePosition({ x: e.clientX, y: e.clientY });
-    };
-
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
-
   const features = [
     {
       icon: <Shield className="w-8 h-8" />,
