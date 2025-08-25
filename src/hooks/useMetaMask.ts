@@ -122,38 +122,6 @@ export function useMetaMask(): MetaMaskState & MetaMaskActions {
     }
   }, [state.isInstalled]);
 
-  const checkConnection = useCallback(async () => {
-    console.log('🔍 checkConnection called, isInstalled:', state.isInstalled);
-    if (!window.ethereum) {
-      console.log('❌ window.ethereum not available');
-      return;
-    }
-
-    try {
-      console.log('🔍 Checking existing connection...');
-      const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-      console.log('📋 Existing accounts:', accounts);
-      if (accounts.length > 0) {
-        console.log('✅ Setting connected state with account:', accounts[0]);
-        setState(prev => ({
-          ...prev,
-          isConnected: true,
-          account: accounts[0],
-        }));
-        console.log('✅ Already connected to account:', accounts[0]);
-      } else {
-        console.log('📋 No existing accounts found');
-        setState(prev => ({
-          ...prev,
-          isConnected: false,
-          account: null,
-        }));
-      }
-    } catch (error) {
-      console.error('❌ Error checking connection:', error);
-    }
-  }, [state.isInstalled]);
-
   const connect = useCallback(async () => {
     if (!state.isInstalled || !window.ethereum) {
       console.log('❌ MetaMask not installed');

@@ -10,7 +10,6 @@ import WalletStatus from "@/components/WalletStatus";
 export default function Landing() {
   const navigate = useNavigate();
   const { isConnected, account, disconnect } = useMetaMask();
-  const [imageError, setImageError] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const particlesRef = useRef<any[]>([]);
@@ -21,6 +20,16 @@ export default function Landing() {
     console.log('🏠 Landing component state:', { isConnected, account });
     console.log('🏠 Button should be:', !isConnected ? 'DISABLED' : 'ENABLED');
   }, [isConnected, account]);
+
+  // Mouse position tracking for particle system
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePosition({ x: e.clientX, y: e.clientY });
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
 
   // Particle system
   useEffect(() => {

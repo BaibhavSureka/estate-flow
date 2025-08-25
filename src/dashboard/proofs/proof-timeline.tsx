@@ -59,9 +59,7 @@ export default function ProofTimeline() {
     }
   };
 
-  const remainingPayments = mockProofs.filter(
-    (proof) => proof.status === "Not Submitted"
-  ).length;
+  // Remove unused filter variables
 
   return (
     <div className="min-h-screen bg-gray-950 text-gray-100 w-screen flex flex-col">
@@ -122,7 +120,7 @@ export default function ProofTimeline() {
                     <span className="text-2xl">⏳</span>
                   </div>
                   <div className="text-2xl font-bold text-yellow-400 mb-1">
-                    {mockProofs.filter(p => p.status === "Pending").length}
+                    {mockProofs.filter(p => p.status === "Not Submitted").length}
                   </div>
                   <div className="text-sm text-gray-400">Pending Verification</div>
                 </CardContent>
