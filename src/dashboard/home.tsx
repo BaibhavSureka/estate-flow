@@ -10,7 +10,6 @@ import WalletStatus from "@/components/WalletStatus";
 export default function Landing() {
   const navigate = useNavigate();
   const { isConnected, account, disconnect } = useMetaMask();
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const particlesRef = useRef<any[]>([]);
   const animationFrameRef = useRef<number | null>(null);
@@ -20,16 +19,6 @@ export default function Landing() {
     console.log('🏠 Landing component state:', { isConnected, account });
     console.log('🏠 Button should be:', !isConnected ? 'DISABLED' : 'ENABLED');
   }, [isConnected, account]);
-
-  // Mouse position tracking for particle system
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      setMousePosition({ x: e.clientX, y: e.clientY });
-    };
-
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
 
   // Particle system
   useEffect(() => {
@@ -47,56 +36,64 @@ export default function Landing() {
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
 
-    // Create particles
+    // Create particles with random movement patterns
     const createParticles = () => {
       const particles = [];
-      for (let i = 0; i < 150; i++) { // Increased from 100 to 150
+      for (let i = 0; i < 300; i++) { 
         particles.push({
           x: Math.random() * canvas.width,
           y: Math.random() * canvas.height,
-          vx: (Math.random() - 0.5) * 0.3, // Reduced from 0.5 to 0.3
-          vy: (Math.random() - 0.5) * 0.3, // Reduced from 0.5 to 0.3
-          size: Math.random() * 2 + 1,
-          opacity: Math.random() * 0.4 + 0.2, // Reduced opacity for subtlety
+          vx: (Math.random() - 0.5) * 0.5, // Random velocity
+          vy: (Math.random() - 0.5) * 0.5, // Random velocity
+          size: Math.random() * 2 + 0.5,
+          opacity: Math.random() * 0.3 + 0.1, // Very subtle opacity
+          // Add random drift for organic movement
+          driftX: (Math.random() - 0.5) * 0.02,
+          driftY: (Math.random() - 0.5) * 0.02,
+          // Add wave motion
+          waveOffset: Math.random() * Math.PI * 2,
+          waveSpeed: 0.001 + Math.random() * 0.002,
         });
       }
       return particles;
     };
 
     particlesRef.current = createParticles();
+    let time = 0;
 
     const animate = () => {
+      time += 0.016; // Approximate 60fps timing
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       // Update and draw particles
       particlesRef.current.forEach((particle, index) => {
-        // Move particle
-        particle.x += particle.vx;
-        particle.y += particle.vy;
+        // Add wave motion for organic movement
+        const waveX = Math.sin(time * particle.waveSpeed + particle.waveOffset) * 0.5;
+        const waveY = Math.cos(time * particle.waveSpeed + particle.waveOffset) * 0.3;
 
-        // Wrap around edges
-        if (particle.x < 0) particle.x = canvas.width;
-        if (particle.x > canvas.width) particle.x = 0;
-        if (particle.y < 0) particle.y = canvas.height;
-        if (particle.y > canvas.height) particle.y = 0;
+        // Move particle with base velocity + drift + wave motion
+        particle.x += particle.vx + particle.driftX + waveX;
+        particle.y += particle.vy + particle.driftY + waveY;
 
-        // Mouse interaction
-        const dx = mousePosition.x - particle.x;
-        const dy = mousePosition.y - particle.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        
-        if (distance < 150) {
-          // Force gets stronger the closer the particle is to the mouse
-          const force = (150 - distance) / 150;
+        // Wrap around edges smoothly
+        if (particle.x < -10) particle.x = canvas.width + 10;
+        if (particle.x > canvas.width + 10) particle.x = -10;
+        if (particle.y < -10) particle.y = canvas.height + 10;
+        if (particle.y > canvas.height + 10) particle.y = -10;
 
-          // Apply weaker force (slower movement)
-          particle.vx -= dx * force * 0.0001; 
-          particle.vy -= dy * force * 0.0001; 
+        // Occasionally change direction slightly for natural randomness
+        if (Math.random() < 0.002) { // 0.2% chance per frame
+          particle.vx += (Math.random() - 0.5) * 0.1;
+          particle.vy += (Math.random() - 0.5) * 0.1;
+          
+          // Keep velocities within reasonable bounds
+          particle.vx = Math.max(-1, Math.min(1, particle.vx));
+          particle.vy = Math.max(-1, Math.min(1, particle.vy));
         }
 
-        // --- Add damping so particles slow down naturally ---
-        particle.vx *= 0.95;  // closer to 1 = less friction, closer to 0 = more friction
-        particle.vy *= 0.95;
+        // Natural damping for smooth movement
+        particle.vx *= 0.998;
+        particle.vy *= 0.998;
 
         // Draw particle
         ctx.beginPath();
@@ -104,18 +101,20 @@ export default function Landing() {
         ctx.fillStyle = `rgba(255, 255, 255, ${particle.opacity})`;
         ctx.fill();
 
-        // Draw connections
+        // Draw connections between nearby particles
         particlesRef.current.forEach((otherParticle, otherIndex) => {
-          if (index !== otherIndex) {
-            const dx2 = particle.x - otherParticle.x;
-            const dy2 = particle.y - otherParticle.y;
-            const distance2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
+          if (index < otherIndex) { // Only draw each connection once
+            const dx = particle.x - otherParticle.x;
+            const dy = particle.y - otherParticle.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
 
-            if (distance2 < 80) {
+            if (distance < 100) { // Increased connection distance slightly
               ctx.beginPath();
               ctx.moveTo(particle.x, particle.y);
               ctx.lineTo(otherParticle.x, otherParticle.y);
-              ctx.strokeStyle = `rgba(255, 255, 255, ${0.1 * (1 - distance2 / 80)})`;
+              const alpha = 0.05 * (1 - distance / 100); // Very subtle connections
+              ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})`;
+              ctx.lineWidth = 0.5;
               ctx.stroke();
             }
           }
@@ -133,7 +132,7 @@ export default function Landing() {
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [mousePosition]);
+  }, []); // Removed mousePosition dependency
 
   const features = [
     {
