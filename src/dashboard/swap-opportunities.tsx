@@ -6,6 +6,7 @@ import { useState } from "react";
 import { Header } from "@/components/header";
 import { Sidebar } from "@/components/sidebar-proxy";
 import { useNavigate } from "react-router-dom";
+import { getPropertyImage, getFallbackImage } from "@/utils/imageUtils";
 
 const mockProposals = [
   {
@@ -198,12 +199,18 @@ export default function ProposalTracker() {
                     <CardContent className="p-6 space-y-4">
                       <div className="relative w-full h-48 rounded-xl overflow-hidden">
                         <img
-                          src={proposal.image}
+                          src={getPropertyImage(proposal.property, proposal.image)}
                           alt={proposal.property}
                           className="w-full h-full object-cover"
                           onError={(e) => {
-                            e.currentTarget.src =
-                              "https://placehold.co/600x400/1f2937/ffffff?text=Property+Image";
+                            // Use fallback image if the main image fails
+                            const fallbackImage = getFallbackImage(proposal.property);
+                            if (e.currentTarget.src !== fallbackImage) {
+                              e.currentTarget.src = fallbackImage;
+                            } else {
+                              // If fallback also fails, use a generic placeholder
+                              e.currentTarget.src = "https://placehold.co/600x400/1f2937/ffffff?text=Property+Image";
+                            }
                           }}
                         />
                         <div className="absolute top-3 right-3">

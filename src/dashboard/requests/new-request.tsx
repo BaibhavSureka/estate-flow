@@ -17,10 +17,12 @@ import { useRequests } from "@/contexts/RequestsContext";
 import { useEstateFlowContract } from "@/hooks/useEstateFlowContract";
 import { useMetaMask } from "@/hooks/useMetaMask";
 import { Loader2, AlertCircle, CheckCircle, ExternalLink, Wallet } from "lucide-react";
+import { storeDynamicPropertyImage, getPropertyImage } from "@/utils/imageUtils";
 
 export default function RequestNew() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   const navigate = useNavigate();
   const { addRequest } = useRequests();
@@ -50,7 +52,14 @@ export default function RequestNew() {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setForm({ ...form, propertyPhoto: e.target.files[0] });
+      const file = e.target.files[0];
+      setForm({ ...form, propertyPhoto: file });
+      
+      // Create preview URL
+      const previewUrl = URL.createObjectURL(file);
+      setPreviewImage(previewUrl);
+      
+      console.log(`📸 Image selected: ${file.name} (${file.size} bytes)`);
     }
   };
 
@@ -98,18 +107,39 @@ export default function RequestNew() {
       if (newRequest) {
         console.log('✅ Request created successfully:', newRequest);
 
+        // Handle image storage
+        let imageUrl = newRequest.imageUrl;
+        if (form.propertyPhoto && previewImage) {
+          // Store the uploaded image dynamically
+          storeDynamicPropertyImage(form.propertyName, previewImage);
+          imageUrl = previewImage;
+          console.log(`💾 Stored dynamic image for "${form.propertyName}": ${previewImage}`);
+        } else if (!imageUrl) {
+          // Use fallback image if no custom image
+          imageUrl = getPropertyImage(form.propertyName);
+          console.log(`🖼️ Using fallback image for "${form.propertyName}": ${imageUrl}`);
+        }
+
         // Add to local state for immediate UI update
-        addRequest({
+        const newRequestData = {
           property: form.propertyName,
           rate: form.yieldPreference ? parseFloat(form.yieldPreference) : 6.0,
           months: parseInt(form.months),
           totalProofs: 6,
           loanAmount: parseFloat(form.loanAmount),
-          image: newRequest.imageUrl || `/properties/${Math.floor(Math.random() * 6) + 1}.png`,
+          image: imageUrl,
           description: form.description,
           collateralType: form.collateralType,
           yieldPreference: form.yieldPreference ? parseFloat(form.yieldPreference) : undefined,
-        });
+          creator: "Current User", // Will be replaced with actual user info
+          blockchainId: newRequest.id || `dynamic_${Date.now()}`,
+          createdAt: new Date(),
+          status: "Open",
+          proofSubmitted: 0
+        };
+
+        console.log('📝 Adding new request to context:', newRequestData);
+        addRequest(newRequestData);
 
         // Show success message
         setShowSuccess(true);
@@ -284,9 +314,38 @@ export default function RequestNew() {
                         onChange={handleFileChange}
                         className="bg-gray-800/50 border-gray-700/50 text-gray-100 h-12 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-gradient-to-r file:from-purple-600 file:to-blue-600 file:text-white hover:file:from-purple-700 hover:file:to-blue-700 transition-all duration-200"
                       />
+                      {previewImage && (
+                        <div className="mt-4 relative">
+                          <div className="relative w-full h-48 rounded-lg overflow-hidden border-2 border-purple-500/30">
+                            <img 
+                              src={previewImage} 
+                              alt="Property Preview" 
+                              className="w-full h-full object-cover"
+                            />
+                            <div className="absolute top-2 right-2">
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="destructive"
+                                onClick={() => {
+                                  setPreviewImage(null);
+                                  setForm({ ...form, propertyPhoto: null });
+                                }}
+                                className="w-8 h-8 p-0 rounded-full"
+                              >
+                                ×
+                              </Button>
+                            </div>
+                          </div>
+                          <p className="text-sm text-green-400 mt-2 text-center">
+                            ✓ Image preview ready for upload
+                          </p>
+                        </div>
+                      )}
                     </div>
                     <p className="text-sm text-gray-400">
-                      Upload a clear photo of the property (max 5MB)
+                      Upload a clear photo of the property (max 5MB). 
+                      {!previewImage && " Image will be stored dynamically and available across the app."}
                     </p>
                   </div>
 

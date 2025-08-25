@@ -9,6 +9,7 @@ import ManagementConsole from "./dashboard/manage";
 import ManagementConsoleProxy from "./dashboard/manage-proxy";
 import SwapOpportunities from "./dashboard/swap-opportunities";
 import MyRequests from "./dashboard/my-requests";
+import NomineeBuyerProfile from "./dashboard/nominee-buyer-profile";
 import { UserProvider } from "./contexts/UserContext";
 import { RequestsProvider } from "./contexts/RequestsContext";
 
@@ -30,6 +31,7 @@ function App() {
             <Route path="/dashboard/swap-opportunities" element={<SwapOpportunities />} />
             <Route path="/dashboard/manage-proxy/:id" element={<ManagementConsoleProxy />} />
             <Route path="/dashboard/new-proposal" element={<ProposalNew />} />
+            <Route path="/dashboard/nominee-buyer-profile" element={<NomineeBuyerProfile />} />
             
             {/* ASSET HOLDER*/}
             <Route path="/dashboard/my-requests" element={<MyRequests />} />

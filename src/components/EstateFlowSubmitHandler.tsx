@@ -2,6 +2,9 @@ import { useState, useCallback } from 'react';
 import { Button } from "@/components/ui/button";
 import { Loader2, AlertCircle, CheckCircle, ExternalLink } from "lucide-react";
 import { useEstateFlowContract } from "@/hooks/useEstateFlowContract";
+import { useRequests } from "@/contexts/RequestsContext";
+import { useMetaMask } from "@/hooks/useMetaMask";
+import { getPropertyImage } from "@/utils/imageUtils";
 
 interface EstateFlowFormData {
   propertyName: string;
@@ -29,6 +32,8 @@ export default function EstateFlowSubmitHandler({
   className = ""
 }: EstateFlowSubmitHandlerProps) {
   const { isSubmitting, error, txHash, submitEstateFlowRequest, clearError } = useEstateFlowContract();
+  const { addRequest } = useRequests();
+  const { account } = useMetaMask();
   const [showSuccess, setShowSuccess] = useState(false);
 
   const handleSubmit = useCallback(async () => {
@@ -50,6 +55,25 @@ export default function EstateFlowSubmitHandler({
       
       if (newRequest) {
         console.log('✅ Request submitted successfully');
+        
+        // Create a properly formatted request for the context
+        const formattedRequest = {
+          property: formData.propertyName,
+          rate: parseFloat(formData.yieldPreference),
+          months: parseInt(formData.loanTerm),
+          loanAmount: parseFloat(formData.loanAmount),
+          image: newRequest.imageUrl || getPropertyImage(formData.propertyName),
+          description: formData.description,
+          collateralType: formData.collateralType,
+          yieldPreference: parseFloat(formData.yieldPreference),
+          totalProofs: 6, // Default value for new requests
+          creator: account || "Unknown",
+          blockchainId: newRequest.id
+        };
+
+        // Add to local context (this will also save to localStorage)
+        addRequest(formattedRequest);
+        
         setShowSuccess(true);
         
         // Call success callback to update the dashboard
@@ -62,7 +86,7 @@ export default function EstateFlowSubmitHandler({
       console.error('❌ Submit handler error:', err);
       if (onError) onError('Unexpected error during submission');
     }
-  }, [formData, submitEstateFlowRequest, clearError, onSuccess, onError]);
+  }, [formData, submitEstateFlowRequest, clearError, onSuccess, onError, addRequest, account, txHash]);
 
   // Show transaction status
   const renderTransactionStatus = () => {

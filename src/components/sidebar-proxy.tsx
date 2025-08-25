@@ -49,6 +49,13 @@ export function Sidebar({ sidebarOpen }: SidebarProps) {
               OPPORTUNITIES
             </h3>
             <a
+              href="/dashboard/nominee-buyer-profile"
+              className="text-sm font-medium text-gray-300 hover:bg-gray-800/50 hover:text-gray-100 group flex items-center rounded-xl px-4 py-3 transition-all duration-200 border border-transparent hover:border-gray-700/50"
+            >
+              <div className="w-2 h-2 bg-purple-500 rounded-full mr-3"></div>
+              My Investment Profile
+            </a>
+            <a
               href="/dashboard/swap-opportunities"
               className="text-sm font-medium text-gray-300 hover:bg-gray-800/50 hover:text-gray-100 group flex items-center rounded-xl px-4 py-3 transition-all duration-200 border border-transparent hover:border-gray-700/50"
             >

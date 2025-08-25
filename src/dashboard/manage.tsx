@@ -22,6 +22,7 @@ import {
 import { Header } from "@/components/header";
 import { Sidebar } from "@/components/sidebar-assetholder";
 import { useRequests } from "@/contexts/RequestsContext";
+import { getPropertyImage, getFallbackImage } from "@/utils/imageUtils";
 
 ChartJS.register(
   CategoryScale,
@@ -168,11 +169,18 @@ export default function ManagementConsole() {
             ) : propertyData ? (
               <div className="w-full h-64 md:h-80 relative rounded-lg overflow-hidden">
                 <img
-                  src={propertyData.image}
+                  src={getPropertyImage(propertyData.property, propertyData.image)}
                   alt={`${propertyData.property} property image`}
                   className="w-full h-full object-cover"
                   onError={(e) => {
-                    e.currentTarget.src = "https://placehold.co/600x400/1f2937/ffffff?text=Property+Image";
+                    // Use fallback image if the main image fails
+                    const fallbackImage = getFallbackImage(propertyData.property);
+                    if (e.currentTarget.src !== fallbackImage) {
+                      e.currentTarget.src = fallbackImage;
+                    } else {
+                      // If fallback also fails, use a generic placeholder
+                      e.currentTarget.src = "https://placehold.co/600x400/1f2937/ffffff?text=Property+Image";
+                    }
                   }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />

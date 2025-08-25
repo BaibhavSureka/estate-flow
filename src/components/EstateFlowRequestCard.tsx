@@ -1,6 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Home, DollarSign, TrendingUp } from "lucide-react";
+import { getPropertyImage, getFallbackImage } from "@/utils/imageUtils";
 
 interface EstateFlowRequest {
   id: string;
@@ -65,11 +66,18 @@ export default function EstateFlowRequestCard({
         {/* Property Image */}
         <div className="relative h-48 overflow-hidden rounded-t-lg">
           <img
-            src={request.imageUrl}
+            src={getPropertyImage(request.propertyName, request.imageUrl)}
             alt={request.propertyName}
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
             onError={(e) => {
-              e.currentTarget.src = "https://placehold.co/400x200/1f2937/9ca3af?text=Property+Image";
+              // Use fallback image if the main image fails
+              const fallbackImage = getFallbackImage(request.propertyName);
+              if (e.currentTarget.src !== fallbackImage) {
+                e.currentTarget.src = fallbackImage;
+              } else {
+                // If fallback also fails, use a generic placeholder
+                e.currentTarget.src = "https://placehold.co/400x200/1f2937/9ca3af?text=Property+Image";
+              }
             }}
           />
           

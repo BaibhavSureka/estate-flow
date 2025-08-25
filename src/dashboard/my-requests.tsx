@@ -8,6 +8,7 @@ import { Header } from "@/components/header";
 import { Sidebar } from "@/components/sidebar-assetholder";
 import { useNavigate } from "react-router-dom";
 import { useRequests } from "@/contexts/RequestsContext";
+import { getPropertyImage, getFallbackImage } from "@/utils/imageUtils";
 
 export default function MyRequests() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -145,17 +146,35 @@ export default function MyRequests() {
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 w-full">
-                {requests.map((proposal) => (
+                {requests.map((proposal) => {
+                  console.log(`🖼️ Rendering proposal:`, { 
+                    id: proposal.id, 
+                    property: proposal.property, 
+                    image: proposal.image,
+                    resolvedImage: getPropertyImage(proposal.property, proposal.image)
+                  });
+                  
+                  return (
                 <Card key={proposal.id} className="bg-gray-900/80 border-gray-800 hover:bg-gray-900 transition-all duration-200 hover:shadow-lg hover:shadow-purple-500/10 group">
                   <CardContent className="p-0">
                     <div className="relative w-full h-48 mb-4 rounded-t-lg overflow-hidden">
                       <img
-                        src={proposal.image}
+                        src={getPropertyImage(proposal.property, proposal.image)}
                         alt={proposal.property}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         onError={(e) => {
-                          e.currentTarget.src =
-                            "https://placehold.co/600x400/1f2937/ffffff?text=Property+Image";
+                          console.log(`❌ Image failed to load: ${e.currentTarget.src}`);
+                          // Use fallback image if the main image fails
+                          const fallbackImage = getFallbackImage(proposal.property);
+                          if (e.currentTarget.src !== fallbackImage) {
+                            e.currentTarget.src = fallbackImage;
+                          } else {
+                            // If fallback also fails, use a generic placeholder
+                            e.currentTarget.src = "https://placehold.co/600x400/1f2937/ffffff?text=Property+Image";
+                          }
+                        }}
+                        onLoad={() => {
+                          console.log(`✅ Image loaded successfully: ${proposal.property}`);
                         }}
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
@@ -216,7 +235,7 @@ export default function MyRequests() {
                     </div>
                   </CardContent>
                 </Card>
-              ))}
+              )})}
               </div>
             )}
           </div>
