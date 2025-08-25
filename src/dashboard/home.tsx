@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowRight, Shield, Zap, Users, TrendingUp, Star, CheckCircle, Globe, Lock, Coins, Home, DollarSign } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMetaMask } from "@/hooks/useMetaMask";
 import MetaMaskButton from "@/components/MetaMaskButton";
